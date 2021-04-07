@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "11575254679",
+    "project_id": "hackathon5-868a0",
+    "storage_bucket": "hackathon5-868a0.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:11575254679:android:73b35806e832b51e75d3d2",
+        "android_client_info": {
+          "package_name": "com.sanjeet.chatapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "11575254679-gs2mtml4781h1a6gcuo83ggn6vafi9ov.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBrxRlc8D_I4pMIW4D5Sm_Y1GRop2l06PU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "11575254679-gs2mtml4781h1a6gcuo83ggn6vafi9ov.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

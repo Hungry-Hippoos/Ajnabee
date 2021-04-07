@@ -1,0 +1,251 @@
+import 'dart:io';
+import 'package:memechat/helper/constants.dart';
+import 'package:memechat/services/database.dart';
+import 'package:memechat/widget/widget.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+
+class Chat extends StatefulWidget {
+  final String chatRoomId;
+  final String userName;
+  
+  Chat({this.chatRoomId, this.userName});
+  @override
+  _ChatState createState() => _ChatState();
+}
+
+class _ChatState extends State<Chat> {
+  ScrollController _sc=ScrollController();
+ 
+  Stream<QuerySnapshot> chats;
+  TextEditingController messageEditingController = new TextEditingController();
+  QuerySnapshot searchResultSnapshot;
+  Widget chatMessages() {
+    
+    return StreamBuilder(
+      stream: chats,
+      builder: (context, snapshot) {
+        return snapshot.hasData
+            ? ListView.builder(
+             
+                controller:_sc,
+                itemCount: snapshot.data.documents.length,
+                itemBuilder: (context, index) {
+                  return MessageTile(
+                    message: snapshot.data.documents[index].data["message"],
+                    sendByMe: Constants.myName ==
+                        snapshot.data.documents[index].data["sendBy"],
+                  );
+                })
+            : Container();
+      },
+    );
+  }
+
+  addMessage() {
+    if (messageEditingController.text.isNotEmpty) {
+      Map<String, dynamic> chatMessageMap = {
+        "sendBy": Constants.myName,
+        "message": messageEditingController.text,
+        'time': DateTime.now().millisecondsSinceEpoch,
+      };
+
+      DatabaseMethods().addMessage(widget.chatRoomId, chatMessageMap);
+
+      setState(() {
+        messageEditingController.text = "";
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    DatabaseMethods().getChats(widget.chatRoomId).then((val) {
+      setState(() {
+        chats = val;
+      });
+    });
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      resizeToAvoidBottomInset: true,
+      resizeToAvoidBottomPadding: false,
+      appBar: AppBar(
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: <Widget>[
+            Container(
+              decoration: BoxDecoration(
+                  border: Border.all(color: Colors.yellow, width: 2),
+                  shape: BoxShape.circle,
+                  color: Colors.black),
+              child: Icon(
+                Icons.person,
+                size: 40,
+              ),
+            ),
+            SizedBox(
+              width: 10,
+            ),
+            Text(
+              widget.userName,
+              style: TextStyle(fontFamily: "Roboto", letterSpacing: 2.5),
+            ),
+            SizedBox(
+              width: 15,
+            ),
+          ],
+        ),
+        backgroundColor: Color(0xFF3B743B),
+        elevation: 0.0,
+      ),
+      body: Container(
+        decoration: BoxDecoration(
+            image: DecorationImage(
+                image: AssetImage("assets/images/chatBG.jpg"),
+                fit: BoxFit.cover)),
+        child: SingleChildScrollView(
+      
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+                minHeight: MediaQuery.of(context).size.height ),
+            child: Column(
+              children: [
+                Container(
+                  height: MediaQuery.of(context).size.height*0.8,
+                  padding:  MediaQuery.of(context).viewInsets,
+                  child: Stack(
+                    children: [
+                      chatMessages(),
+                     
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.only(top: 0),
+        child: Container(
+          //    alignment: Alignment.bottomCenter,
+        
+          width: MediaQuery.of(context).size.width,
+          padding: MediaQuery.of(context).viewInsets,
+          color: Colors.black,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(5.0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(25),
+                      border: new Border.all(
+                        color: Colors.white,
+                        width: 1.0,
+                      ),
+                    ),
+                    child: TextField(
+                      onTap: (){_sc.jumpTo(_sc.position.maxScrollExtent);
+             },
+                      maxLines: 3,
+                      minLines: 1,
+                      style: TextStyle(fontSize: 20, color: Colors.white),
+                      controller: messageEditingController,
+                      decoration: InputDecoration(
+                          hintText: "Type a message",
+                          hintStyle: TextStyle(
+                            color: Colors.white60,
+                            fontSize: 20,
+                          ),
+                          border: InputBorder.none),
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(
+                width: 16,
+              ),
+              GestureDetector(
+                onTap: () {
+                  addMessage();
+            
+                  _sc.jumpTo(_sc.position.maxScrollExtent);
+                },
+                child: Container(
+                    height: 40,
+                    width: 40,
+                    decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                            colors: [
+                              const Color(0x36FFFFFF),
+                              const Color(0x0FFFFFFF)
+                            ],
+                            begin: FractionalOffset.topLeft,
+                            end: FractionalOffset.bottomRight),
+                        borderRadius: BorderRadius.circular(40)),
+                    padding: EdgeInsets.all(12),
+                    child: Image.asset(
+                      "assets/images/send.png",
+                      height: 25,
+                      width: 25,
+                    )),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class MessageTile extends StatelessWidget {
+  final String message;
+  final bool sendByMe;
+
+  MessageTile({@required this.message, @required this.sendByMe});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.only(
+          top: 8, bottom: 8, left: sendByMe ? 0 : 24, right: sendByMe ? 24 : 0),
+      alignment: sendByMe ? Alignment.centerRight : Alignment.centerLeft,
+      child: Container(
+        margin:
+            sendByMe ? EdgeInsets.only(left: 30) : EdgeInsets.only(right: 30),
+        padding: EdgeInsets.only(top: 17, bottom: 17, left: 20, right: 20),
+        decoration: BoxDecoration(
+            borderRadius: sendByMe
+                ? BorderRadius.only(
+                    topLeft: Radius.circular(23),
+                    topRight: Radius.circular(23),
+                    bottomLeft: Radius.circular(23))
+                : BorderRadius.only(
+                    topLeft: Radius.circular(23),
+                    topRight: Radius.circular(23),
+                    bottomRight: Radius.circular(23)),
+            gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  const Color(0xff808080),
+                  const Color(0xff070707),
+                ])),
+        child: Text(message,
+            textAlign: TextAlign.start,
+            style: TextStyle(
+                color: Colors.yellow,
+                fontSize: 16,
+                fontFamily: 'OverpassRegular',
+                fontWeight: FontWeight.w400)),
+      ),
+    );
+  }
+}
