@@ -17,11 +17,6 @@
 ---
  - Link to the YouTube video is : https://youtu.be/Pe04W-8gwPc .
  
- <p align="center">
-   <img href="http://hits.dwyl.com/mrpandya/Show" src="http://hits.dwyl.com/Hungry-Hippoos/Ajnabee-mobile.svg"
-         alt="hits">
-</p>
- 
  
 - ### Snapshots of the project :
 
